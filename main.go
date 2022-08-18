@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+type Product struct {
+	Name        string
+	Description string
+	Price       float64
+	Amounts     int
+}
+
 var temp = template.Must(template.ParseGlob("templates/*.html"))
 
 // Função principal
@@ -15,9 +22,12 @@ func main() {
 
 // Função de recebimento de requisição, encaminhamento e resposta.
 func index(w http.ResponseWriter, r *http.Request) {
-	temp.ExecuteTemplate(w, "Index", nil)
+	products := []Product{
+		{Name: "Shirt", Description: "No description", Price: 3, Amounts: 40},
+		{Name: "Pants", Description: "No description", Price: 5, Amounts: 6},
+	}
+
+	temp.ExecuteTemplate(w, "Index", products)
 }
 
 // Servidor em go simples, localhost:8000
-// A função pricipal recebe uma requisição, e envia para a função index.
-// A função index retorna uma resposta enviando o index.html, marcado com {{define "Index"}} no arquivo, templates/index.html
