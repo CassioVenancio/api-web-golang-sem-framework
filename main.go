@@ -1,9 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"net/http"
+
+	_ "github.com/lib/pq"
 )
+
+// função para conecção com o banco de dados
+func connectDb() *sql.DB {
+	conn := "user=postgres dbname=store-db password=root host=localhost sslmode=disable"
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
+}
 
 type Product struct {
 	Name        string
@@ -22,12 +35,35 @@ func main() {
 
 // Função de recebimento de requisição, encaminhamento e resposta.
 func index(w http.ResponseWriter, r *http.Request) {
-	products := []Product{
-		{Name: "Shirt", Description: "No description", Price: 3, Amounts: 40},
-		{Name: "Pants", Description: "No description", Price: 5, Amounts: 6},
+	db := connectDb()
+	stmt, err := db.Query("select * from produtos")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	p := Product{}
+	products := []Product{}
+
+	for stmt.Next() {
+		var id, amounts int
+		var name, description string
+		var price float64
+
+		err = stmt.Scan(&id, &name, &description, &price, &amounts)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		p.Name = name
+		p.Description = description
+		p.Price = price
+		p.Amounts = amounts
+
+		products = append(products, p) // append adiciona o proximo elemento para o array, da direita para a esquerda
 	}
 
 	temp.ExecuteTemplate(w, "Index", products)
+	defer db.Close() // fecha conecção
 }
 
 // Servidor em go simples, localhost:8000
