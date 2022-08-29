@@ -40,3 +40,16 @@ func FindAllProducts() []Product {
 	defer db.Close() // fecha conecção
 	return products
 }
+
+func SaveProducts(name string, description string, price float64, amounts int) {
+	db := db.ConnectDb()
+
+	query, err := db.Prepare("insert into produtos(name, description, price, amounts) values ($1, $2, $3, $4)")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	query.Exec(name, description, price, amounts)
+	defer db.Close()
+}

@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"project/m/v2/model"
+	"strconv"
 	"text/template"
 )
 
@@ -16,4 +18,23 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func New(w http.ResponseWriter, r *http.Request) {
 	temp.ExecuteTemplate(w, "New", nil)
+}
+
+func Insert(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		name := r.FormValue("name")
+		desc := r.FormValue("description")
+		price, errPriceConv := strconv.ParseFloat(r.FormValue("price"), 64)
+		amounts, errAmountsConv := strconv.Atoi(r.FormValue("amounts"))
+
+		if errPriceConv != nil {
+			log.Println("Conversion failed in price", errPriceConv)
+		}
+		if errAmountsConv != nil {
+			log.Println("Conversion failed in amounts", errAmountsConv)
+		}
+
+		model.SaveProducts(name, desc, price, amounts)
+	}
+	http.Redirect(w, r, "/", 301)
 }
