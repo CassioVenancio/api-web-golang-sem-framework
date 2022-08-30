@@ -3,6 +3,7 @@ package model
 import "project/m/v2/db"
 
 type Product struct {
+	ID          int
 	Name        string
 	Description string
 	Price       float64
@@ -29,6 +30,7 @@ func FindAllProducts() []Product {
 			panic(err.Error())
 		}
 
+		p.ID = id
 		p.Name = name
 		p.Description = description
 		p.Price = price
@@ -51,5 +53,17 @@ func SaveProducts(name string, description string, price float64, amounts int) {
 	}
 
 	query.Exec(name, description, price, amounts)
+	defer db.Close()
+}
+
+func DeleteProductById(id string) {
+	db := db.ConnectDb()
+
+	deleteQuery, errDelete := db.Prepare("delete from produtos where id=$1")
+	if errDelete != nil {
+		panic(errDelete.Error())
+	}
+
+	deleteQuery.Exec(id)
 	defer db.Close()
 }
